@@ -486,7 +486,7 @@
       + '<p class="form-note">' + esc(f.note) + " 共 " + f.rows.length + " 个字段。</p>";
 
     if (f.missing) {
-      html += '<div class="miss-bar">⚠ <span>有 <b>' + f.missing + " 项</b>无法从系统获取，需要你补充。启程不会猜测缺失内容。</span></div>";
+      html += '<div class="miss-bar">⚠ <span>有 <b>' + f.missing + " 项</b>无法从系统获取，需要你补充。院事通不会猜测缺失内容。</span></div>";
     }
 
     html += '<table class="sheet"><thead><tr><th>字段</th><th>内容</th><th>来源</th><th>置信度</th></tr></thead><tbody>';
@@ -678,7 +678,7 @@
     const blob = new Blob([JSON.stringify(state.records, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "启程-我的事务-" + new Date().toISOString().slice(0, 10) + ".json";
+    a.download = "院事通-我的事务-" + new Date().toISOString().slice(0, 10) + ".json";
     a.click();
     URL.revokeObjectURL(a.href);
     toast("已导出 " + state.records.length + " 条记录");

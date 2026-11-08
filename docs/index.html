@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>启程 · 新生事务与信息中枢（离线版）</title>
+<title>院事通@至善鱼 · 通知聚合与事务办理（离线版）</title>
 <style>
 /* 启程 · 视觉基调沿用东南大学的「东大蓝 + 米纸 + 鎏金」，
    标题用宋体以贴近学府气质，正文保持无衬线以保证屏读效率。 */
@@ -516,10 +516,10 @@ table.sheet{width:100%;border-collapse:collapse;font-size:12.8px;}
 <body>
 <header class="topbar">
   <div class="brand">
-    <div class="logo">启</div>
+    <div class="logo">院</div>
     <div class="brand-text">
-      <h1>启程<span class="h1-en">QICHENG</span></h1>
-      <p>新生事务与信息中枢 · 多智能体协同</p>
+      <h1>院事通<span class="h1-en">YUANSHITONG</span></h1>
+      <p>通知聚合 · 多智能体协同 · 事务办理</p>
     </div>
   </div>
   <div class="school">
@@ -541,7 +541,7 @@ table.sheet{width:100%;border-collapse:collapse;font-size:12.8px;}
       <h2>粘贴一条通知</h2>
       <span class="step-no">壹</span>
     </div>
-    <p class="hint">把群消息、政策原文粘进来。启程只处理你主动提供的内容，不读取未授权的群聊。</p>
+    <p class="hint">把群消息、政策原文粘进来。院事通只处理你主动提供的内容，不读取未授权的群聊。</p>
 
     <div class="samples" id="samples"></div>
 
@@ -637,7 +637,7 @@ table.sheet{width:100%;border-collapse:collapse;font-size:12.8px;}
     </div>
     <div class="modal-body" id="modalBody"></div>
     <div class="modal-foot">
-      <p class="modal-note">签名、盖章与提交仍由你本人完成。启程不代提交。</p>
+      <p class="modal-note">签名、盖章与提交仍由你本人完成。院事通不代提交。</p>
       <div class="modal-actions">
         <button class="ghost" data-close type="button">返回核对</button>
         <button class="primary" id="printBtn" type="button">打印 / 存为 PDF</button>
@@ -1530,7 +1530,7 @@ window.fetch = function (url) {
       + '<p class="form-note">' + esc(f.note) + " 共 " + f.rows.length + " 个字段。</p>";
 
     if (f.missing) {
-      html += '<div class="miss-bar">⚠ <span>有 <b>' + f.missing + " 项</b>无法从系统获取，需要你补充。启程不会猜测缺失内容。</span></div>";
+      html += '<div class="miss-bar">⚠ <span>有 <b>' + f.missing + " 项</b>无法从系统获取，需要你补充。院事通不会猜测缺失内容。</span></div>";
     }
 
     html += '<table class="sheet"><thead><tr><th>字段</th><th>内容</th><th>来源</th><th>置信度</th></tr></thead><tbody>';
@@ -1722,7 +1722,7 @@ window.fetch = function (url) {
     const blob = new Blob([JSON.stringify(state.records, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "启程-我的事务-" + new Date().toISOString().slice(0, 10) + ".json";
+    a.download = "院事通-我的事务-" + new Date().toISOString().slice(0, 10) + ".json";
     a.click();
     URL.revokeObjectURL(a.href);
     toast("已导出 " + state.records.length + " 条记录");

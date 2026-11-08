@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>启程 · 新生事务与信息中枢</title>
+<link rel="stylesheet" href="assets/style.css?v=4">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">启</div>
+    <div class="brand-text">
+      <h1>启程<span class="h1-en">QICHENG</span></h1>
+      <p>新生事务与信息中枢 · 多智能体协同</p>
+    </div>
+  </div>
+  <div class="school">
+    <span class="school-name">东南大学</span>
+    <span class="school-en">SOUTHEAST UNIVERSITY · 1902</span>
+    <span class="school-motto">止于至善</span>
+  </div>
+  <div class="userbar">
+    <span class="mode-tag"><i class="pulse"></i>本地演示模式</span>
+    <span class="engine-tag" id="engineTag" title="引擎状态">规则引擎</span>
+    <span class="who">张知远 · 2026 级</span>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- 左：输入与流水线 -->
+  <section class="panel input-panel">
+    <div class="panel-head">
+      <h2>粘贴一条通知</h2>
+      <span class="step-no">壹</span>
+    </div>
+    <p class="hint">把群消息、政策原文粘进来。启程只处理你主动提供的内容，不读取未授权的群聊。</p>
+
+    <div class="samples" id="samples"></div>
+
+    <details class="source-block" id="sourceBlock" open>
+      <summary>
+        <i class="src-dot"></i>信息源 · SEU Wiki 校园公告
+        <span class="src-count" id="sourceCount"></span>
+      </summary>
+      <div class="source-inner">
+        <div class="source-bar">
+          <span id="sourceHint">正在读取校园公告…</span>
+          <button id="refreshSource" class="ghost mini" type="button">刷新</button>
+        </div>
+        <ul class="source-list" id="sourceList"></ul>
+      </div>
+    </details>
+    <p class="source-note">内容来自 <a href="https://seu.wiki/" target="_blank" rel="noopener">seu.wiki</a> 公开 RSS，点击即载入通知原文；正式办理仍以院系原文为准。</p>
+
+    <textarea id="notice" spellcheck="false" placeholder="在此粘贴通知原文，例如：&#10;关于开展本学年本科生评奖评优工作的通知&#10;各书院、各位同学：……"></textarea>
+    <div class="input-meta">
+      <span><b id="charCount">0</b> 字</span>
+      <span>识别类型：<b id="typeHint">自动判断</b></span>
+    </div>
+    <div class="source-chip hidden" id="sourceChip"></div>
+
+    <button id="run" class="primary" type="button">开始处理</button>
+    <p class="fineprint">规则模式仅在本机处理；启用模型时，原文会发往你配置的模型服务。</p>
+
+    <div class="pipeline-block">
+      <h3>智能体流水线</h3>
+      <ol class="pipeline" id="pipeline">
+        <li data-agent="intel"><span class="dot"></span><span class="name">情报 Agent</span><span class="state">待处理</span></li>
+        <li data-agent="trans"><span class="dot"></span><span class="name">译官 Agent</span><span class="state">待处理</span></li>
+        <li data-agent="form"><span class="dot"></span><span class="name">表单 Agent</span><span class="state">待处理</span></li>
+        <li data-agent="archive"><span class="dot"></span><span class="name">归档 Agent</span><span class="state">待确认</span></li>
+      </ol>
+      <div class="log" id="log" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 右：结果三视图 -->
+  <section class="panel result-panel">
+    <div class="result-head">
+      <div class="tabs" role="tablist" id="tabs">
+        <button class="tab active" role="tab" aria-selected="true" data-view="card">译文卡</button>
+        <button class="tab" role="tab" aria-selected="false" data-view="form">表单草表</button>
+        <button class="tab" role="tab" aria-selected="false" data-view="archive">我的事务</button>
+      </div>
+      <span class="timer" id="timer"></span>
+    </div>
+
+    <div class="view" id="viewCard">
+      <div class="empty-state" id="cardEmpty">
+        <div class="empty-icon">文</div>
+        <h3>还没有处理任何通知</h3>
+        <p>选择左侧的示例通知，或粘贴一条你自己的，点「开始处理」。<br>两分钟内你会得到一张译文卡和一张填好的草表。</p>
+      </div>
+      <div id="cardBody" class="hidden"></div>
+    </div>
+
+    <div class="view hidden" id="viewForm">
+      <div class="empty-state" id="formEmpty">
+        <div class="empty-icon">表</div>
+        <h3>草表会在理解通知之后生成</h3>
+        <p>每个字段都标注来源：来自教务系统、学工系统、你本人，还是无法获取。取不到的格子会留空并高亮，绝不猜测。</p>
+      </div>
+      <div id="formBody" class="hidden"></div>
+    </div>
+
+    <div class="view hidden" id="viewArchive">
+      <div class="archive-toolbar">
+        <input id="search" type="search" placeholder="搜索标题、类型或截止时间…">
+        <button id="exportAll" class="ghost" type="button">导出归档</button>
+      </div>
+      <div id="archiveBody"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <span class="foot-motto">止于至善</span>
+  <span class="foot-meta">东南大学 · 2026 新生 AI 创客大赛参赛原型</span>
+  <span class="foot-note">AI 只做可核查的草稿，提交权在人</span>
+</footer>
+
+<!-- 生成结果弹层 -->
+<div class="modal hidden" id="modal" role="dialog" aria-modal="true" aria-label="草表预览">
+  <div class="modal-mask" data-close></div>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="modalTitle">草表已生成</h3>
+      <button class="icon-btn" data-close aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot">
+      <p class="modal-note">签名、盖章与提交仍由你本人完成。启程不代提交。</p>
+      <div class="modal-actions">
+        <button class="ghost" data-close type="button">返回核对</button>
+        <button class="primary" id="printBtn" type="button">打印 / 存为 PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="assets/agents.js?v=6"></script>
+<script src="assets/app.js?v=6"></script>
+</body>
+</html>

@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>启程 · 新生事务与信息中枢（离线版）</title>
+<style>
+/* 启程 · 视觉基调沿用东南大学的「东大蓝 + 米纸 + 鎏金」，
+   标题用宋体以贴近学府气质，正文保持无衬线以保证屏读效率。 */
+:root{
+  --ink:#1b2531;
+  --ink-2:#3d4a59;
+  --muted:#7d8794;
+  --line:#e6dfd3;
+  --line-soft:#eee8dd;
+  --bg:#f4f1ea;
+  --panel:#fffdf9;
+  --blue:#0d2c4f;
+  --blue-2:#17406c;
+  --blue-soft:#edf1f6;
+  --blue-line:#cfd9e5;
+  --gold:#b8935a;
+  --gold-deep:#8c6c3a;
+  --gold-soft:#f6efe1;
+  --amber:#a9660d;
+  --amber-soft:#fdf3e2;
+  --green:#1d6f4b;
+  --green-soft:#eaf4ee;
+  --red:#a8342b;
+  --red-soft:#fdecea;
+  --radius:8px;
+  --shadow:0 1px 2px rgba(28,40,54,.04), 0 14px 34px rgba(28,40,54,.07);
+  --serif:"Noto Serif SC","Source Han Serif SC","Songti SC","STSong","SimSun",serif;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(900px 420px at 80% -8%, #f0ece2 0%, rgba(240,236,226,0) 62%),
+    radial-gradient(700px 380px at 0% 100%, #efe9dd 0%, rgba(239,233,221,0) 60%),
+    var(--bg);
+  color:var(--ink);
+  font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:14px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+body::before{
+  content:"止于至善";
+  position:fixed;right:26px;top:150px;
+  writing-mode:vertical-rl;
+  font-family:var(--serif);
+  font-size:42px;letter-spacing:.34em;
+  color:rgba(13,44,79,.045);
+  pointer-events:none;z-index:0;
+}
+h1,h2,h3,h4,p,ol,ul{margin:0;}
+h1,h2,h3,h4{font-family:var(--serif);}
+button{font-family:inherit;}
+
+/* ---------- 顶栏 ---------- */
+.topbar{
+  display:flex;align-items:center;gap:24px;
+  padding:14px 32px;
+  background:linear-gradient(180deg,#0d2c4f 0%,#0a2340 100%);
+  border-bottom:1px solid rgba(184,147,90,.55);
+  box-shadow:0 10px 26px rgba(9,28,49,.16);
+  position:sticky;top:0;z-index:20;
+}
+.topbar::after{
+  content:"";position:absolute;left:0;right:0;bottom:-3px;height:2px;
+  background:linear-gradient(90deg,rgba(184,147,90,0),rgba(184,147,90,.85),rgba(184,147,90,0));
+  pointer-events:none;
+}
+.brand{display:flex;align-items:center;gap:13px;flex:none;}
+.logo{
+  width:44px;height:44px;border-radius:4px;display:grid;place-items:center;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(216,193,154,.72);
+  box-shadow:inset 0 0 0 3px rgba(13,44,79,.9), inset 0 0 0 4px rgba(216,193,154,.28);
+  color:#f0e2c6;font-family:var(--serif);font-size:22px;font-weight:600;
+}
+.brand-text h1{
+  font-size:20px;letter-spacing:.16em;color:#fdfaf4;font-weight:600;
+  display:flex;align-items:baseline;gap:9px;
+}
+.h1-en{
+  font-family:"Segoe UI",system-ui,sans-serif;font-size:8.5px;font-weight:500;
+  letter-spacing:.28em;color:rgba(216,193,154,.85);
+}
+.brand-text p{font-size:11.5px;color:rgba(247,243,234,.58);letter-spacing:.05em;}
+.school{
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  margin-left:auto;padding-left:24px;margin-right:auto;
+  border-left:1px solid rgba(216,193,154,.26);
+  text-align:center;line-height:1.5;
+}
+.school-name{
+  font-family:var(--serif);font-size:14px;letter-spacing:.34em;
+  color:#f0e3c9;text-indent:.34em;
+}
+.school-en{
+  font-size:8px;letter-spacing:.22em;color:rgba(247,243,234,.42);
+  font-family:"Segoe UI",system-ui,sans-serif;
+}
+.school-motto{
+  margin-top:2px;font-family:var(--serif);font-size:10.5px;letter-spacing:.4em;
+  color:var(--gold);text-indent:.4em;
+}
+.userbar{display:flex;align-items:center;gap:12px;font-size:12px;color:rgba(247,243,234,.78);flex:none;}
+.mode-tag{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:2px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(216,193,154,.28);
+  color:#cfe3d8;font-size:11.5px;letter-spacing:.04em;
+}
+.engine-tag{
+  font-size:11px;padding:4px 10px;border-radius:2px;
+  background:rgba(255,255,255,.05);color:rgba(247,243,234,.72);
+  border:1px solid rgba(255,255,255,.14);white-space:nowrap;letter-spacing:.04em;
+}
+.engine-tag.llm{background:rgba(216,193,154,.14);color:#eddcbe;border-color:rgba(216,193,154,.5);}
+.pulse{width:6px;height:6px;border-radius:50%;background:#7fc9a5;display:inline-block;animation:pulse 2.4s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.who{color:rgba(247,243,234,.55);letter-spacing:.03em;}
+
+/* ---------- 布局 ---------- */
+.layout{
+  display:grid;grid-template-columns:minmax(340px,420px) 1fr;gap:24px;
+  max-width:1360px;margin:0 auto;padding:28px 32px 40px;align-items:start;
+  position:relative;z-index:1;
+}
+.panel{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);position:relative;
+}
+.input-panel{padding:24px 22px 20px;}
+.input-panel::before,.result-panel::before{
+  content:"";position:absolute;top:-1px;left:20px;width:52px;height:2px;background:var(--gold);
+}
+.result-panel{padding:0;min-height:640px;display:flex;flex-direction:column;overflow:hidden;}
+.result-panel::before{left:22px;}
+
+/* ---------- 输入区 ---------- */
+.panel-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;}
+.panel-head h2{font-size:17px;letter-spacing:.08em;color:var(--blue);font-weight:600;}
+.step-no{
+  font-family:var(--serif);font-size:12px;color:var(--gold);
+  border:1px solid rgba(184,147,90,.45);border-radius:2px;padding:1px 6px;line-height:1.4;
+}
+.hint{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.samples{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.chip{
+  border:1px solid var(--line);background:#fffdf9;color:var(--blue-2);
+  padding:6px 12px;border-radius:2px;font-size:12px;cursor:pointer;transition:.18s;
+  letter-spacing:.03em;
+}
+.chip:hover{background:var(--gold-soft);border-color:rgba(184,147,90,.55);color:var(--gold-deep);}
+.chip:active{transform:translateY(1px);}
+
+/* ---------- 信息源 ---------- */
+.source-block{border:1px solid var(--line);border-radius:4px;background:#fbf8f2;margin-bottom:8px;}
+.source-block summary{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;
+  font-size:12.5px;color:var(--ink-2);list-style:none;user-select:none;
+}
+.source-block summary::-webkit-details-marker{display:none;}
+.source-block summary::after{content:"▾";margin-left:auto;font-size:10px;color:var(--muted);transition:.2s;}
+.source-block[open] summary::after{transform:rotate(180deg);}
+.src-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex:none;}
+.src-count{font-size:10.5px;color:var(--muted);margin-left:auto;}
+.source-block[open] .src-count{margin-right:14px;}
+.source-inner{padding:0 10px 10px;border-top:1px dashed var(--line);}
+.source-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 2px 6px;font-size:10.8px;color:var(--muted);}
+.ghost.mini{padding:3px 9px;font-size:10.8px;border-radius:2px;}
+.source-list{list-style:none;margin:0;padding:0;max-height:190px;overflow:auto;}
+.source-list li{padding:8px 9px;border-radius:3px;cursor:pointer;border:1px solid transparent;transition:.15s;}
+.source-list li:hover,.source-list li:focus{background:var(--gold-soft);border-color:rgba(184,147,90,.28);outline:none;}
+.src-item-title{font-size:12.2px;color:var(--ink-2);line-height:1.55;}
+.src-item-meta{display:flex;align-items:center;gap:7px;font-size:10.4px;color:var(--muted);margin-top:3px;}
+.src-cat{background:var(--blue-soft);color:var(--blue-2);border-radius:2px;padding:0 5px;}
+.src-item-meta a{color:#8a8378;text-decoration:none;margin-left:auto;}
+.src-item-meta a:hover{color:var(--gold-deep);text-decoration:underline;}
+.source-list .empty{font-size:11.3px;color:var(--muted);padding:10px 8px;cursor:default;line-height:1.7;}
+.source-list .empty:hover{background:transparent;border-color:transparent;}
+.source-note{font-size:10.4px;color:var(--muted);line-height:1.6;margin:0 0 12px;}
+.source-note a{color:#8a8378;}
+.source-chip{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11.3px;color:var(--ink-2);
+  background:#fbf7ee;border:1px solid #e8ddc7;border-radius:4px;padding:6px 9px;margin:0 0 12px;
+}
+.source-chip .from{color:var(--gold-deep);font-weight:600;letter-spacing:.04em;}
+.source-chip a{color:var(--blue-2);text-decoration:none;font-size:11px;}
+.source-chip a:hover{text-decoration:underline;}
+.tag.link{text-decoration:none;}
+textarea{
+  width:100%;height:190px;resize:vertical;padding:13px 14px;
+  border:1px solid var(--line);border-radius:4px;background:#fdfbf6;
+  font-family:inherit;font-size:12.8px;line-height:1.7;color:var(--ink-2);
+  outline:none;transition:.18s;
+}
+textarea:focus{border-color:var(--blue-2);background:#fff;box-shadow:0 0 0 3px rgba(13,44,79,.07);}
+.input-meta{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin:8px 2px 14px;}
+.input-meta b{color:var(--ink-2);font-weight:600;}
+
+.primary{
+  width:100%;padding:12px 16px;border:0;border-radius:4px;cursor:pointer;
+  background:linear-gradient(180deg,#17406c,#0d2c4f);color:#fdf8ec;font-size:14px;font-weight:600;
+  letter-spacing:.18em;text-indent:.18em;
+  box-shadow:0 6px 18px rgba(13,44,79,.22), inset 0 0 0 1px rgba(216,193,154,.4);
+  transition:.18s;
+}
+.primary:hover{filter:brightness(1.08);}
+.primary:disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
+.fineprint{font-size:11px;color:var(--muted);text-align:center;margin-top:8px;}
+
+/* ---------- 流水线 ---------- */
+.pipeline-block{margin-top:22px;border-top:1px solid var(--line-soft);padding-top:16px;}
+.pipeline-block h3{font-size:12.5px;color:var(--blue);letter-spacing:.14em;margin-bottom:10px;}
+.pipeline{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px;}
+.pipeline li{
+  display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:3px;font-size:12.5px;
+  color:var(--muted);transition:.2s;border-left:2px solid transparent;
+}
+.pipeline li .dot{
+  width:7px;height:7px;border-radius:50%;background:#d5cdc0;flex:none;transition:.2s;
+}
+.pipeline li .name{color:var(--ink-2);font-weight:600;min-width:82px;letter-spacing:.03em;}
+.pipeline li .state{margin-left:auto;font-size:11.5px;}
+.pipeline li.running{background:var(--blue-soft);border-left-color:var(--blue-2);}
+.pipeline li.running .dot{background:var(--blue-2);animation:pulse 1.1s infinite;}
+.pipeline li.running .state{color:var(--blue-2);}
+.pipeline li.done .dot{background:var(--green);}
+.pipeline li.done .state{color:var(--green);}
+.pipeline li.wait .dot{background:var(--gold);}
+.pipeline li.wait .state{color:var(--gold-deep);}
+
+.log{
+  margin-top:10px;background:#f9f6ef;border:1px solid var(--line-soft);border-radius:4px;
+  padding:10px 12px;min-height:64px;max-height:132px;overflow:auto;
+  font-family:ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;
+  font-size:10.8px;line-height:1.75;color:#6a7480;
+}
+.log p{margin:0;opacity:0;animation:fadeIn .3s forwards;}
+.log .ok{color:var(--green);}
+.log .warn{color:var(--amber);}
+@keyframes fadeIn{to{opacity:1}}
+
+/* ---------- 结果区 ---------- */
+.result-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap;
+  background:#fffdf9;
+}
+.tabs{display:flex;gap:26px;}
+.tab{
+  position:relative;border:0;background:transparent;color:var(--muted);font-size:12.8px;
+  padding:15px 2px 13px;cursor:pointer;transition:.18s;white-space:nowrap;letter-spacing:.06em;
+}
+.tab:hover{color:var(--ink-2);}
+.tab.active{color:var(--blue);font-weight:600;}
+.tab.active::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--gold);
+}
+.timer{font-size:11.5px;color:var(--muted);}
+
+.view{padding:22px;overflow:auto;flex:1;}
+.view.hidden{display:none;}
+.hidden{display:none !important;}
+
+.empty-state{max-width:420px;margin:72px auto;text-align:center;color:var(--muted);}
+.empty-icon{
+  width:52px;height:52px;display:grid;place-items:center;margin:0 auto 14px;
+  background:#fffdf9;border:1px solid rgba(184,147,90,.5);
+  box-shadow:inset 0 0 0 3px #fffdf9, inset 0 0 0 4px rgba(184,147,90,.22);
+  color:var(--blue);font-family:var(--serif);font-size:21px;font-weight:600;
+}
+.empty-state h3{font-size:15px;color:var(--ink-2);margin-bottom:6px;letter-spacing:.06em;}
+.empty-state p{font-size:12.5px;line-height:1.8;}
+
+/* ---------- 译文卡 ---------- */
+.card-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.tag{
+  font-size:11px;padding:3px 9px;border-radius:2px;background:var(--blue-soft);
+  color:var(--blue-2);font-weight:600;letter-spacing:.05em;white-space:nowrap;
+}
+.tag.grey{background:#f3f0ea;color:#87817a;font-weight:400;}
+.tag.amber{background:var(--amber-soft);color:var(--amber);}
+.tag.green{background:var(--green-soft);color:var(--green);}
+.card-title{
+  font-size:21px;line-height:1.5;font-weight:600;letter-spacing:.03em;
+  color:#152232;margin-bottom:12px;
+}
+.conclusion{
+  border-left:3px solid var(--gold);
+  background:linear-gradient(90deg,#fbf7ee,#fffdf9);
+  padding:13px 16px;border-radius:0 4px 4px 0;
+  font-family:var(--serif);font-size:15.5px;font-weight:600;color:#16243a;line-height:1.75;
+  margin-bottom:20px;
+}
+.block{margin-bottom:20px;}
+.block h4{
+  font-size:12px;color:var(--gold-deep);letter-spacing:.16em;margin-bottom:9px;font-weight:600;
+  display:flex;align-items:center;gap:8px;
+}
+.block h4::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(184,147,90,.3),rgba(184,147,90,0));}
+.actions{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;}
+.actions li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--ink-2);cursor:pointer;}
+.actions li .box{
+  width:16px;height:16px;border:1px solid #c9c0b1;border-radius:2px;flex:none;margin-top:3px;
+  display:grid;place-items:center;font-size:10px;color:transparent;transition:.15s;background:#fff;
+}
+.actions li.done .box{background:var(--green);border-color:var(--green);color:#fff;}
+.actions li.done span{color:var(--muted);text-decoration:line-through;}
+
+.kv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
+.kv{border:1px solid var(--line);border-radius:3px;padding:10px 12px;background:#fdfbf6;}
+.kv .k{font-size:11px;color:var(--muted);margin-bottom:3px;letter-spacing:.05em;}
+.kv .v{font-size:13.5px;color:var(--ink);font-weight:600;word-break:break-all;}
+.kv .v.small{font-size:12.5px;font-weight:400;color:var(--ink-2);}
+
+.materials{display:flex;flex-wrap:wrap;gap:8px;}
+.mat{
+  font-size:12.5px;padding:5px 11px;border-radius:2px;background:var(--gold-soft);
+  border:1px solid rgba(184,147,90,.28);color:var(--gold-deep);
+}
+
+details.origin{border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#fdfbf6;}
+details.origin summary{
+  cursor:pointer;padding:10px 14px;font-size:12.5px;color:var(--blue-2);
+  list-style:none;display:flex;align-items:center;justify-content:space-between;
+}
+details.origin summary::-webkit-details-marker{display:none;}
+details.origin summary::after{content:"展开";font-size:11px;color:var(--muted);}
+details.origin[open] summary::after{content:"收起";}
+.origin-body{padding:4px 14px 14px;font-size:12.5px;line-height:1.95;color:var(--ink-2);border-top:1px dashed var(--line);}
+mark{background:#f8e9c4;color:inherit;padding:0 2px;border-radius:1px;}
+
+.card-foot{
+  margin-top:8px;padding-top:14px;border-top:1px solid var(--line-soft);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  font-size:11.5px;color:var(--muted);
+}
+
+/* ---------- 草表 ---------- */
+.form-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;}
+.form-name{font-size:18px;font-weight:600;letter-spacing:.04em;color:#16243a;font-family:var(--serif);}
+.form-note{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+.miss-bar{
+  display:flex;align-items:center;gap:10px;background:var(--amber-soft);border:1px solid #efd9b6;
+  color:var(--amber);border-radius:3px;padding:9px 12px;font-size:12.5px;margin-bottom:14px;
+}
+.miss-bar b{font-size:13px;}
+.checks{margin-top:14px;border:1px solid var(--line);border-radius:3px;padding:10px 14px;background:#fdfbf6;}
+.checks h4{font-size:11px;color:var(--muted);letter-spacing:.08em;margin-bottom:5px;font-family:inherit;}
+.checks ul{margin:0;padding-left:16px;font-size:12.5px;color:var(--ink-2);line-height:1.85;}
+.checks li::marker{color:var(--gold);}
+
+table.sheet{width:100%;border-collapse:collapse;font-size:12.8px;}
+.sheet th{
+  text-align:left;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.1em;
+  padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+.sheet td{padding:9px 10px;border-bottom:1px solid var(--line-soft);vertical-align:middle;}
+.sheet td.label{color:var(--ink-2);width:31%;}
+.sheet td.value{font-weight:600;color:var(--ink);}
+.sheet tr.missing{background:#fffcf4;}
+.sheet tr.missing td:first-child{box-shadow:inset 3px 0 0 var(--gold);}
+.sheet td.src{width:104px;}
+.sheet td.conf{width:96px;}
+.sheet input[type=text],.sheet select{
+  width:100%;padding:7px 9px;border:1px solid #e0cda8;border-radius:2px;background:#fff;
+  font-family:inherit;font-size:12.5px;color:var(--ink);outline:none;
+}
+.sheet input[type=text]:focus,.sheet select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,147,90,.14);}
+.srcbadge{font-size:10.5px;padding:2px 7px;border-radius:2px;white-space:nowrap;display:inline-block;}
+.src-inline{display:none;}
+.src-jwc{background:var(--blue-soft);color:var(--blue-2);}
+.src-xg{background:var(--green-soft);color:var(--green);}
+.src-self{background:#f2f0ec;color:#6c6a66;}
+.src-infer{background:#f1edf7;color:#63508c;}
+.src-none{background:var(--amber-soft);color:var(--amber);}
+.confbar{display:inline-block;width:40px;height:3px;border-radius:0;background:#e7e1d6;vertical-align:middle;margin-right:6px;overflow:hidden;}
+.confbar i{display:block;height:100%;background:var(--blue-2);}
+.confbar i.low{background:var(--gold);}
+.confnum{font-size:10.5px;color:var(--muted);}
+
+.confirm-box{
+  margin-top:18px;border:1px solid var(--line);border-radius:3px;padding:14px;background:#fdfbf6;
+}
+.confirm-box label{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--ink-2);cursor:pointer;}
+.confirm-box input[type=checkbox]{width:16px;height:16px;margin-top:2px;accent-color:var(--blue);flex:none;}
+.confirm-actions{display:flex;gap:10px;margin-top:12px;align-items:center;}
+.confirm-actions .primary{width:auto;padding:10px 20px;font-size:13px;letter-spacing:.1em;text-indent:.1em;}
+.ghost{
+  padding:10px 16px;border:1px solid var(--line);background:#fffdf9;border-radius:3px;
+  font-size:12.5px;color:var(--ink-2);cursor:pointer;transition:.18s;white-space:nowrap;
+}
+.ghost:hover{border-color:rgba(184,147,90,.55);background:var(--gold-soft);color:var(--gold-deep);}
+
+/* ---------- 归档 ---------- */
+.archive-toolbar{display:flex;gap:10px;margin-bottom:16px;}
+.archive-toolbar input{
+  flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:3px;background:#fdfbf6;
+  font-family:inherit;font-size:12.5px;outline:none;
+}
+.archive-toolbar input:focus{border-color:var(--blue-2);background:#fff;}
+.rec{
+  border:1px solid var(--line);border-left:2px solid rgba(184,147,90,.35);
+  border-radius:3px;padding:13px 15px;margin-bottom:10px;
+  background:#fffdf9;transition:.18s;
+}
+.rec:hover{border-color:rgba(184,147,90,.5);border-left-color:var(--gold);box-shadow:0 6px 18px rgba(28,40,54,.06);}
+.rec-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
+.rec-title{font-size:13.8px;font-weight:600;color:#16243a;font-family:var(--serif);letter-spacing:.02em;}
+.rec-meta{font-size:11.5px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;}
+.rec-actions{margin-left:auto;display:flex;gap:8px;}
+.rec-actions button{font-size:11.5px;padding:4px 10px;}
+.rec-empty{text-align:center;color:var(--muted);font-size:12.5px;padding:48px 0;}
+
+/* ---------- 弹层 ---------- */
+.modal{position:fixed;inset:0;display:grid;place-items:center;z-index:50;padding:24px;}
+.modal.hidden{display:none;}
+.modal-mask{position:absolute;inset:0;background:rgba(13,44,79,.42);backdrop-filter:blur(2px);}
+.modal-card{
+  position:relative;width:min(620px,100%);max-height:88vh;display:flex;flex-direction:column;
+  background:#fffdf9;border-radius:4px;border-top:3px solid var(--gold);
+  box-shadow:0 24px 60px rgba(9,28,49,.32);overflow:hidden;
+  animation:rise .22s ease-out;
+}
+@keyframes rise{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);}
+.modal-head h3{font-size:15.5px;letter-spacing:.06em;color:var(--blue);}
+.icon-btn{border:0;background:transparent;font-size:20px;color:var(--muted);cursor:pointer;line-height:1;padding:4px 8px;border-radius:2px;}
+.icon-btn:hover{background:var(--gold-soft);color:var(--gold-deep);}
+.modal-body{padding:20px;overflow:auto;}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--line);background:#fbf8f2;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.modal-note{font-size:11.5px;color:var(--amber);}
+.modal-actions{display:flex;gap:9px;}
+.modal-actions .primary{width:auto;padding:9px 18px;font-size:12.5px;}
+
+.paper{
+  border:1px solid #d9d1c2;padding:26px 28px;background:#fff;
+  box-shadow:inset 0 0 0 4px #fff, inset 0 0 0 5px #ece4d1;
+}
+.paper h4{
+  font-family:var(--serif);font-size:17px;text-align:center;margin-bottom:4px;letter-spacing:.2em;
+  color:#14243a;text-indent:.2em;
+}
+.paper .paper-sub{text-align:center;font-size:11px;color:var(--muted);margin-bottom:18px;letter-spacing:.06em;}
+.paper table{width:100%;border-collapse:collapse;font-size:12px;}
+.paper td{border:1px solid #ddd6c8;padding:8px 10px;}
+.paper td.k{background:#faf7f0;width:31%;color:var(--ink-2);font-family:var(--serif);}
+.paper td.v{color:var(--ink);}
+.paper .paper-sign{margin-top:18px;font-size:11.5px;color:var(--muted);display:flex;justify-content:space-between;}
+
+/* ---------- 页脚 ---------- */
+.site-foot{
+  max-width:1360px;margin:0 auto;padding:0 32px 30px;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  font-size:11px;color:var(--muted);position:relative;z-index:1;
+}
+.site-foot::before{content:"";position:absolute;left:32px;right:32px;top:-10px;height:1px;background:linear-gradient(90deg,rgba(184,147,90,.5),rgba(184,147,90,0));}
+.foot-motto{
+  font-family:var(--serif);font-size:12.5px;color:var(--gold-deep);letter-spacing:.34em;
+  padding-right:18px;border-right:1px solid var(--line);
+}
+.foot-meta{letter-spacing:.05em;}
+.foot-note{margin-left:auto;color:#918a80;}
+
+/* ---------- toast ---------- */
+.toast{
+  position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);opacity:0;pointer-events:none;
+  background:#0d2c4f;color:#f7f3ea;font-size:12.5px;padding:10px 16px;border-radius:2px;
+  border:1px solid rgba(216,193,154,.45);
+  transition:.24s;z-index:60;box-shadow:0 10px 30px rgba(9,28,49,.24);
+}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+
+/* ---------- 打印 ---------- */
+@media print{
+  body{background:#fff;}
+  body::before{display:none;}
+  .topbar,.layout,.toast,.site-foot,.modal-head,.modal-foot,.modal-mask{display:none !important;}
+  .modal{position:static;padding:0;display:block;}
+  .modal-card{box-shadow:none;max-height:none;width:100%;border-radius:0;}
+  .modal-body{padding:0;overflow:visible;}
+  .paper{border:0;padding:0;box-shadow:none;}
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width:1200px){
+  body::before{display:none;}
+}
+@media (max-width:960px){
+  .topbar{padding:12px 18px;gap:12px;flex-wrap:wrap;}
+  .school{display:none;}
+  .who{display:none;}
+  .layout{grid-template-columns:1fr;padding:20px 14px 32px;gap:16px;}
+  .result-panel{min-height:520px;}
+  .input-panel{padding:20px 18px 18px;}
+  .view{padding:16px;}
+  .card-title{font-size:18px;}
+  .sheet td.src,.sheet td.conf{display:none;}
+  .sheet th:nth-child(3),.sheet th:nth-child(4){display:none;}
+  .src-inline{display:inline-block;margin-top:5px;font-size:10px;}
+  .sheet td.value{line-height:1.5;}
+  .rec-actions{margin-left:0;}
+  .site-foot{padding:0 16px 24px;gap:10px;}
+  .foot-note{display:none;}
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">启</div>
+    <div class="brand-text">
+      <h1>启程<span class="h1-en">QICHENG</span></h1>
+      <p>新生事务与信息中枢 · 多智能体协同</p>
+    </div>
+  </div>
+  <div class="school">
+    <span class="school-name">东南大学</span>
+    <span class="school-en">SOUTHEAST UNIVERSITY · 1902</span>
+    <span class="school-motto">止于至善</span>
+  </div>
+  <div class="userbar">
+    <span class="mode-tag"><i class="pulse"></i>本地演示模式</span>
+    <span class="engine-tag" id="engineTag" title="引擎状态">规则引擎</span>
+    <span class="who">张知远 · 2026 级</span>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- 左：输入与流水线 -->
+  <section class="panel input-panel">
+    <div class="panel-head">
+      <h2>粘贴一条通知</h2>
+      <span class="step-no">壹</span>
+    </div>
+    <p class="hint">把群消息、政策原文粘进来。启程只处理你主动提供的内容，不读取未授权的群聊。</p>
+
+    <div class="samples" id="samples"></div>
+
+    <details class="source-block" id="sourceBlock" open>
+      <summary>
+        <i class="src-dot"></i>信息源 · SEU Wiki 校园公告
+        <span class="src-count" id="sourceCount"></span>
+      </summary>
+      <div class="source-inner">
+        <div class="source-bar">
+          <span id="sourceHint">正在读取校园公告…</span>
+          <button id="refreshSource" class="ghost mini" type="button">刷新</button>
+        </div>
+        <ul class="source-list" id="sourceList"></ul>
+      </div>
+    </details>
+    <p class="source-note">内容来自 <a href="https://seu.wiki/" target="_blank" rel="noopener">seu.wiki</a> 公开 RSS，点击即载入通知原文；正式办理仍以院系原文为准。</p>
+
+    <textarea id="notice" spellcheck="false" placeholder="在此粘贴通知原文，例如：&#10;关于开展本学年本科生评奖评优工作的通知&#10;各书院、各位同学：……"></textarea>
+    <div class="input-meta">
+      <span><b id="charCount">0</b> 字</span>
+      <span>识别类型：<b id="typeHint">自动判断</b></span>
+    </div>
+    <div class="source-chip hidden" id="sourceChip"></div>
+
+    <button id="run" class="primary" type="button">开始处理</button>
+    <p class="fineprint">规则模式仅在本机处理；启用模型时，原文会发往你配置的模型服务。</p>
+
+    <div class="pipeline-block">
+      <h3>智能体流水线</h3>
+      <ol class="pipeline" id="pipeline">
+        <li data-agent="intel"><span class="dot"></span><span class="name">情报 Agent</span><span class="state">待处理</span></li>
+        <li data-agent="trans"><span class="dot"></span><span class="name">译官 Agent</span><span class="state">待处理</span></li>
+        <li data-agent="form"><span class="dot"></span><span class="name">表单 Agent</span><span class="state">待处理</span></li>
+        <li data-agent="archive"><span class="dot"></span><span class="name">归档 Agent</span><span class="state">待确认</span></li>
+      </ol>
+      <div class="log" id="log" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 右：结果三视图 -->
+  <section class="panel result-panel">
+    <div class="result-head">
+      <div class="tabs" role="tablist" id="tabs">
+        <button class="tab active" role="tab" aria-selected="true" data-view="card">译文卡</button>
+        <button class="tab" role="tab" aria-selected="false" data-view="form">表单草表</button>
+        <button class="tab" role="tab" aria-selected="false" data-view="archive">我的事务</button>
+      </div>
+      <span class="timer" id="timer"></span>
+    </div>
+
+    <div class="view" id="viewCard">
+      <div class="empty-state" id="cardEmpty">
+        <div class="empty-icon">文</div>
+        <h3>还没有处理任何通知</h3>
+        <p>选择左侧的示例通知，或粘贴一条你自己的，点「开始处理」。<br>两分钟内你会得到一张译文卡和一张填好的草表。</p>
+      </div>
+      <div id="cardBody" class="hidden"></div>
+    </div>
+
+    <div class="view hidden" id="viewForm">
+      <div class="empty-state" id="formEmpty">
+        <div class="empty-icon">表</div>
+        <h3>草表会在理解通知之后生成</h3>
+        <p>每个字段都标注来源：来自教务系统、学工系统、你本人，还是无法获取。取不到的格子会留空并高亮，绝不猜测。</p>
+      </div>
+      <div id="formBody" class="hidden"></div>
+    </div>
+
+    <div class="view hidden" id="viewArchive">
+      <div class="archive-toolbar">
+        <input id="search" type="search" placeholder="搜索标题、类型或截止时间…">
+        <button id="exportAll" class="ghost" type="button">导出归档</button>
+      </div>
+      <div id="archiveBody"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <span class="foot-motto">止于至善</span>
+  <span class="foot-meta">东南大学 · 2026 新生 AI 创客大赛参赛原型 · 单文件离线版</span>
+  <span class="foot-note">AI 只做可核查的草稿，提交权在人</span>
+</footer>
+
+<!-- 生成结果弹层 -->
+<div class="modal hidden" id="modal" role="dialog" aria-modal="true" aria-label="草表预览">
+  <div class="modal-mask" data-close></div>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="modalTitle">草表已生成</h3>
+      <button class="icon-btn" data-close aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot">
+      <p class="modal-note">签名、盖章与提交仍由你本人完成。启程不代提交。</p>
+      <div class="modal-actions">
+        <button class="ghost" data-close type="button">返回核对</button>
+        <button class="primary" id="printBtn" type="button">打印 / 存为 PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* 启程 · 智能体实现（本地规则版）
+ * 四个 Agent：情报抽取 / 公文改写 / 表单映射 / 归档。
+ * 演示版不调用外部大模型，所有判断均可复现、可核查。
+ */
+window.QC = (function () {
+  "use strict";
+
+  const PROFILE = {
+    name: "张知远",
+    sid: "2026A0312",
+    college: "信息科学与工程学院",
+    major: "信息工程",
+    grade: "2026 级",
+    gpa: "3.42",
+    failCount: "0",
+    discipline: "无纪律处分记录",
+    awards: "2026 年校数学竞赛二等奖；军训优秀学员",
+    practice: "2026 年暑期社会实践（南京）",
+    phone: "138****6621",
+    dorm: "桃园 5 舍 312",
+    bank: "6222 **** **** 1189",
+    guardian: "父亲 138****3092"
+  };
+
+  const SOURCE_LABEL = {
+    jwc: "教务系统",
+    xg: "学工系统",
+    self: "本人填写",
+    infer: "AI 推断",
+    none: "无法获取"
+  };
+
+  const TYPE_LABEL = {
+    award: "评奖评优",
+    leave: "请假销假",
+    activity: "活动报名",
+    reimburse: "报销",
+    unknown: "通用事务"
+  };
+
+  const SAMPLES = [
+    {
+      label: "评奖评优通知",
+      type: "award",
+      text:
+        "关于开展 2026—2027 学年本科生评奖评优工作的通知\n" +
+        "各书院、各位同学：\n" +
+        "为做好本学年本科生评奖评优工作，现将有关事项通知如下：\n" +
+        "一、评选范围：2026 级全体本科在校生（含转专业学生）。\n" +
+        "二、评选条件：学年平均学分绩点不低于 3.0，无不及格课程，未受过纪律处分；申报「三好学生」须另附社会实践证明。\n" +
+        "三、材料要求：请于 11 月 8 日 17:00 前将《本科生评奖评优申报表》一式两份、成绩单复印件、获奖证书复印件交至所在书院学生工作办公室（九龙湖校区文科楼 B203）。\n" +
+        "四、其他：逾期不予受理。联系人：王老师，电话 025-52091234，邮箱 xgb@seu.edu.cn。"
+    },
+    {
+      label: "请假管理通知",
+      type: "leave",
+      text:
+        "关于国庆假期前后学生请假管理的通知\n" +
+        "各位同学：\n" +
+        "为保障假期前后教学秩序，现就请假事项通知如下：\n" +
+        "一、离校须于 9 月 28 日 18:00 前在「学工系统」提交请假申请，并附家长知情同意书，经辅导员审批后方可离校。\n" +
+        "二、请假三天以上须由书院分管领导复核；未经审批擅自离校的，按校纪校规处理。\n" +
+        "三、返校后 24 小时内须在系统内销假，逾期未销假视为旷课。\n" +
+        "联系人：李老师，电话 025-52095678。"
+    },
+    {
+      label: "活动报名通知",
+      type: "activity",
+      text:
+        "关于举办「书院文化节 · 新生之夜」活动的通知\n" +
+        "各书院新生：\n" +
+        "为丰富新生校园文化生活，定于 10 月 30 日 19:00 在九龙湖校区焦廷标馆举办「书院文化节 · 新生之夜」活动。\n" +
+        "一、参加对象：2026 级全体本科新生。\n" +
+        "二、报名方式：请于 10 月 28 日 18:00 前扫码报名，限 200 人，额满即止。\n" +
+        "三、注意事项：活动当天请提前 15 分钟入场签到；需统一乘车前往的同学，请在报名时勾选「需要车辆接送」。\n" +
+        "联系人：陈同学，电话 025-52098888。"
+    }
+  ];
+
+  /* ---------- 情报 Agent ---------- */
+  function detectType(text) {
+    if (/评奖评优|奖学金|奖助|推优|入党积极分子|三好学生|优秀学生干部/.test(text)) return "award";
+    if (/请假|销假|离校|返校/.test(text)) return "leave";
+    if (/报名|活动|讲座|晚会|文化节/.test(text)) return "activity";
+    if (/报销|发票|差旅|经费/.test(text)) return "reimburse";
+    return "unknown";
+  }
+
+  function sentences(text) {
+    return text.split(/(?<=[。；\n])/).map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
+  function findDeadline(text) {
+    const re = /(\d{1,2})\s*月\s*(\d{1,2})\s*日(?:\s*(上午|下午)?\s*(\d{1,2})\s*[:：]\s*(\d{2}))?/g;
+    const out = [];
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      const ctx = text.slice(Math.max(0, m.index - 34), m.index + m[0].length + 16);
+      const pre = text.slice(Math.max(0, m.index - 8), m.index);
+      let score = 0;
+      if (/截止|不予受理|逾期|额满/.test(ctx)) score += 3;
+      if (/前/.test(ctx)) score += 1;
+      if (/提交|交至|报送|申报|报名|申请|材料|上交/.test(ctx)) score += 2;
+      if (/请于|须于|应于|务必于|需于/.test(pre)) score += 2;
+      if (/不晚于|不得晚于/.test(ctx)) score -= 3;
+      else if (/条件|资格|须|要求/.test(ctx)) score -= 1;
+      let hour = m[4] ? Number(m[4]) : null;
+      if (hour !== null && m[3] === "下午" && hour < 12) hour += 12;
+      out.push({
+        raw: m[0].replace(/\s+/g, ""),
+        month: Number(m[1]),
+        day: Number(m[2]),
+        hour: hour,
+        minute: m[5] ? Number(m[5]) : null,
+        urgent: score > 0,
+        score: score,
+        index: m.index
+      });
+    }
+    if (!out.length) return null;
+    out.sort(function (a, b) { return (b.score - a.score) || (a.index - b.index); });
+    const d = out[0];
+    if (d.score <= 0) return null;   // 只有条件性日期时，不把条件冒充截止时间
+    const year = new Date().getFullYear();
+    d.iso = year + "-" + String(d.month).padStart(2, "0") + "-" + String(d.day).padStart(2, "0");
+    d.hm = d.hour === null ? "" : String(d.hour).padStart(2, "0") + ":" + String(d.minute).padStart(2, "0");
+    return d;
+  }
+
+  function fmtDeadline(d) {
+    if (!d) return "以原文为准";
+    return d.month + " 月 " + d.day + " 日" + (d.hm ? " " + d.hm : "");
+  }
+
+  function findPlace(text) {
+    const m = text.match(/(九龙湖|四牌楼|丁家桥|苏州)[^，。；\n)）]{0,18}/);
+    return m ? m[0].replace(/[）)\s]+$/, "").trim() : "";
+  }
+
+  function findContact(text) {
+    const name = text.match(/联系人[：:]\s*([\u4e00-\u9fa5]{2,4}(?:老师|同学|主任|处)?)/);
+    const phone = text.match(/(?:0\d{2,3}[-\s]?\d{7,8}|1\d{10})/);
+    const mail = text.match(/[\w.+-]+@[\w.-]+\.\w+/);
+    return {
+      name: name ? name[1] : "",
+      phone: phone ? phone[0] : "",
+      mail: mail ? mail[0] : ""
+    };
+  }
+
+  function findAudience(text) {
+    const m = text.match(/(?:评选范围|参加对象|参与对象|面向)[：:]\s*([^。；\n]+)/);
+    return m ? m[1].trim() : "";
+  }
+
+  function findMaterials(text) {
+    const hits = sentences(text).filter(function (s) {
+      return /材料|一式|复印件|交至|附|提交|上传|原件/.test(s);
+    });
+    const items = [];
+    const keys = [
+      ["申报表", "《本科生评奖评优申报表》一式两份"],
+      ["成绩单", "成绩单复印件"],
+      ["获奖证书", "获奖证书复印件"],
+      ["社会实践证明", "社会实践证明"],
+      ["家长知情同意书", "家长知情同意书"],
+      ["请假申请", "学工系统请假申请"],
+      ["报名信息", "报名信息（扫码填写）"]
+    ];
+    keys.forEach(function (k) {
+      if (text.indexOf(k[0]) !== -1) items.push(k[1]);
+    });
+    return { items: items, source: hits };
+  }
+
+  function ingest(text) {
+    const type = detectType(text);
+    const firstLine = text.split(/\n/)[0].trim();
+    const deadline = findDeadline(text);
+    const contact = findContact(text);
+    const place = findPlace(text);
+    const audience = findAudience(text);
+    const materials = findMaterials(text);
+
+    const fields = {
+      type: 1,
+      title: firstLine ? 1 : 0,
+      deadline: deadline ? (deadline.urgent ? 0.95 : 0.82) : 0,
+      place: place ? 0.86 : 0,
+      contact: contact.name ? (contact.phone ? 0.93 : 0.74) : 0,
+      audience: audience ? 0.9 : 0,
+      materials: materials.items.length ? 0.88 : 0
+    };
+    const vals = Object.keys(fields).map(function (k) { return fields[k]; });
+    const overall = vals.reduce(function (a, b) { return a + b; }, 0) / vals.length;
+
+    return {
+      type: type,
+      typeLabel: TYPE_LABEL[type],
+      title: firstLine || "未识别标题",
+      deadline: deadline,
+      place: place,
+      contact: contact,
+      audience: audience,
+      materials: materials.items,
+      evidence: materials.source,
+      confidence: fields,
+      overall: overall,
+      charCount: text.replace(/\s/g, "").length
+    };
+  }
+
+  /* ---------- 译官 Agent ---------- */
+  function translate(ev) {
+    const dl = fmtDeadline(ev.deadline);
+    let conclusion, actions, caveats;
+
+    if (ev.type === "award") {
+      conclusion = ev.deadline
+        ? "本学年评奖评优开始申报，" + dl + " 截止，逾期不予受理。"
+        : "本学年评奖评优开始申报，原文未写明确切截止时间，请以院系原文为准。";
+      actions = [
+        "对照条件自查：学年绩点不低于 3.0、无不及格课程、无纪律处分",
+        "备齐三样材料：申报表一式两份、成绩单复印件、获奖证书复印件",
+        "在截止前交到" + (ev.place || "书院学生工作办公室") + "，现场登记",
+        "确认是否申报「三好学生」——该类别另需社会实践证明"
+      ];
+      caveats = ["「三好学生」与「优秀学生干部」不可同时兼报，以书院最终口径为准。"];
+    } else if (ev.type === "leave") {
+      conclusion = ev.deadline
+        ? "离校须在 " + dl + " 前完成线上请假审批，返校 24 小时内销假。"
+        : "离校请假须先在「学工系统」提交并审批，原文未写明确切时间。";
+      actions = [
+        "在「学工系统」提交请假申请，不要只口头告知辅导员",
+        "上传家长知情同意书，写明离校与返校时间",
+        "请假超过三天，需辅导员与书院分管领导双重审批",
+        "返校后 24 小时内销假，逾期按旷课处理"
+      ];
+      caveats = ["未经审批擅自离校按校纪校规处理，不要先走后补。"];
+    } else if (ev.type === "activity") {
+      conclusion = ev.deadline
+        ? "活动 " + dl.replace("前", "") + " 前报名，名额有限、额满即止。"
+        : "活动已开放报名，原文未写明确切截止时间，建议尽快报名。";
+      actions = [
+        "在截止前扫码报名，注意限 200 人",
+        "记下活动时间与地点，加入日历提醒",
+        "需要统一乘车前往的，报名时勾选「需要车辆接送」",
+        "当天提前 15 分钟入场签到"
+      ];
+      caveats = ["报名成功不等于有座位，建议提前到场。"];
+    } else {
+      conclusion = "这是一条事务类通知，关键时间与材料见下方清单。";
+      actions = [
+        "确认通知的适用对象是否包含你",
+        "按材料清单准备，注意份数与是否需复印件",
+        "在截止时间前完成提交，并保留回执",
+        "有疑问直接联系发文单位，不以群内传言为准"
+      ];
+      caveats = ["通知类型未能自动判断，请以原文为准。"];
+    }
+
+    return {
+      conclusion: conclusion,
+      actions: actions,
+      caveats: caveats,
+      deadlineText: dl,
+      place: ev.place || "详见原文",
+      contactText: ev.contact.name
+        ? ev.contact.name + (ev.contact.phone ? " · " + ev.contact.phone : "") + (ev.contact.mail ? " · " + ev.contact.mail : "")
+        : "原文未注明",
+      audience: ev.audience || "原文未注明"
+    };
+  }
+
+  /* ---------- 表单 Agent ---------- */
+  function row(label, value, source, conf, opt) {
+    return Object.assign({
+      label: label,
+      value: value || "",
+      source: source,
+      conf: conf,
+      input: "text"
+    }, opt || {});
+  }
+
+  function buildForm(ev) {
+    let name, note, rows;
+
+    if (ev.type === "award") {
+      name = "本科生评奖评优申报表（草表）";
+      note = "字段来自教务系统与学工系统；取不到的一律留空，不做推测。";
+      rows = [
+        row("姓名", PROFILE.name, "jwc", 0.99),
+        row("学号", PROFILE.sid, "jwc", 0.99),
+        row("学院 / 年级", PROFILE.college + " · " + PROFILE.grade, "xg", 0.98),
+        row("专业", PROFILE.major, "jwc", 0.97),
+        row("学年平均学分绩点", PROFILE.gpa, "jwc", 0.96),
+        row("不及格课程门数", PROFILE.failCount, "jwc", 0.95),
+        row("纪律处分记录", PROFILE.discipline, "xg", 0.9),
+        row("获奖情况", PROFILE.awards, "xg", 0.88, { input: "textarea" }),
+        row("申报类别", "", "none", 0, {
+          required: true, input: "select", options: ["三好学生", "优秀学生干部", "单项奖"],
+          hint: "系统中无此字段，请本人选择；三好学生需另附实践证明"
+        }),
+        row("社会实践证明编号", "", "none", 0, {
+          required: true, hint: "申报三好学生时必填，填写证明编号或上传照片"
+        }),
+        row("联系电话", PROFILE.phone, "self", 0.99)
+      ];
+    } else if (ev.type === "leave") {
+      name = "学生请假申请单（草表）";
+      note = "起止时间按通知推断填写，请按实际行程修改。";
+      rows = [
+        row("姓名", PROFILE.name, "xg", 0.99),
+        row("学号", PROFILE.sid, "xg", 0.99),
+        row("学院 / 宿舍", PROFILE.college + " · " + PROFILE.dorm, "xg", 0.96),
+        row("请假类型", "事假", "infer", 0.62, { input: "select", options: ["事假", "病假", "公假"] }),
+        row("开始时间", "", "infer", 0, { required: true, hint: "按车票或行程填写，格式 2026-09-28 18:00" }),
+        row("结束时间", "", "infer", 0, { required: true, hint: "返校时间须在销假时限内" }),
+        row("请假事由", "", "self", 0, { required: true }),
+        row("去向与联系方式", "", "self", 0, { required: true }),
+        row("家长知情同意书", "", "none", 0, { required: true, hint: "填写已上传的文件名，或注明纸质件已交辅导员" }),
+        row("本人联系电话", PROFILE.phone, "self", 0.99),
+        row("紧急联系人", PROFILE.guardian, "xg", 0.9)
+      ];
+    } else if (ev.type === "activity") {
+      name = "「新生之夜」活动报名表（草表）";
+      note = "报名信息直接取自学工系统，勾选项需本人确认。";
+      rows = [
+        row("姓名", PROFILE.name, "xg", 0.99),
+        row("学号", PROFILE.sid, "xg", 0.99),
+        row("学院", PROFILE.college, "xg", 0.98),
+        row("手机号", PROFILE.phone, "self", 0.99),
+        row("是否需车辆接送", "", "none", 0, {
+          required: true, input: "select", options: ["需要", "不需要"], hint: "通知要求报名时勾选"
+        }),
+        row("饮食禁忌 / 备注", "", "none", 0, { hint: "选填，便于现场安排" })
+      ];
+    } else {
+      name = "事务办理草表（通用）";
+      note = "通知类型未能识别，仅生成基础信息表。";
+      rows = [
+        row("姓名", PROFILE.name, "jwc", 0.99),
+        row("学号", PROFILE.sid, "jwc", 0.99),
+        row("学院", PROFILE.college, "xg", 0.98),
+        row("办理事项", ev.title, "infer", 0.7),
+        row("截止时间", fmtDeadline(ev.deadline), "infer", ev.deadline ? 0.86 : 0, { required: !ev.deadline }),
+        row("联系电话", PROFILE.phone, "self", 0.99)
+      ];
+    }
+
+    const missing = rows.filter(function (r) { return !r.value; });
+    return {
+      name: name,
+      note: note,
+      rows: rows,
+      missing: missing.length,
+      requiredMissing: rows.filter(function (r) { return r.required && !r.value; }).length
+    };
+  }
+
+  function deadlineState(d) {
+    if (!d) return { level: "unknown", text: "以原文为准" };
+    const now = new Date();
+    const target = new Date(d.iso + "T" + (d.hm || "23:59") + ":00");
+    const diff = target - now;
+    const days = Math.ceil(diff / 86400000);
+    if (diff < 0) return { level: "over", text: "已截止" };
+    if (days <= 2) return { level: "urgent", text: "剩 " + Math.max(1, days) + " 天" };
+    return { level: "ok", text: "剩 " + days + " 天" };
+  }
+
+  return {
+    PROFILE: PROFILE,
+    SAMPLES: SAMPLES,
+    SOURCE_LABEL: SOURCE_LABEL,
+    TYPE_LABEL: TYPE_LABEL,
+    ingest: ingest,
+    translate: translate,
+    buildForm: buildForm,
+    fmtDeadline: fmtDeadline,
+    deadlineState: deadlineState,
+    sentences: sentences
+  };
+})();
+
+</script>
+<script>
+/* 离线单文件版：拦截后端请求，全部走规则引擎 */
+window.fetch = function (url) {
+  var u = String(url);
+  if (u.indexOf("/api/health") === 0) {
+    return Promise.resolve(new Response(JSON.stringify({ configured: false, model: "", base: "" }),
+      { status: 200, headers: { "Content-Type": "application/json" } }));
+  }
+  if (u.indexOf("/api/sources/seu") === 0) {
+    return Promise.resolve(new Response(JSON.stringify({ ok: true, items: [], fetchedAt: Date.now() }),
+      { status: 200, headers: { "Content-Type": "application/json" } }));
+  }
+  return Promise.reject(new Error("offline"));
+};
+/* 启程 · 交互与编排 */
+(function () {
+  "use strict";
+
+  const QC = window.QC;
+  const $ = function (sel) { return document.querySelector(sel); };
+  const STORE_KEY = "qicheng.records.v1";
+
+  const el = {
+    samples: $("#samples"),
+    notice: $("#notice"),
+    charCount: $("#charCount"),
+    typeHint: $("#typeHint"),
+    run: $("#run"),
+    pipeline: $("#pipeline"),
+    log: $("#log"),
+    tabs: $("#tabs"),
+    timer: $("#timer"),
+    engineTag: $("#engineTag"),
+    sourceList: $("#sourceList"),
+    sourceHint: $("#sourceHint"),
+    sourceCount: $("#sourceCount"),
+    refreshSource: $("#refreshSource"),
+    sourceChip: $("#sourceChip"),
+    cardEmpty: $("#cardEmpty"),
+    cardBody: $("#cardBody"),
+    formEmpty: $("#formEmpty"),
+    formBody: $("#formBody"),
+    archiveBody: $("#archiveBody"),
+    search: $("#search"),
+    exportAll: $("#exportAll"),
+    modal: $("#modal"),
+    modalTitle: $("#modalTitle"),
+    modalBody: $("#modalBody"),
+    printBtn: $("#printBtn"),
+    toast: $("#toast")
+  };
+
+  const state = {
+    extract: null,
+    card: null,
+    form: null,
+    records: loadRecords(),
+    startedAt: 0,
+    engine: { configured: false, model: "" },
+    source: null
+  };
+
+  /* ---------- 工具 ---------- */
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function nowTime() {
+    const d = new Date();
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") + ":" + String(d.getSeconds()).padStart(2, "0");
+  }
+  function toast(msg) {
+    el.toast.textContent = msg;
+    el.toast.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { el.toast.classList.remove("show"); }, 2200);
+  }
+  function loadRecords() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch (e) { return []; }
+  }
+  function saveRecords() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state.records)); } catch (e) { /* 忽略配额错误 */ }
+  }
+  function setAgent(name, cls, text) {
+    const li = el.pipeline.querySelector('[data-agent="' + name + '"]');
+    if (!li) return;
+    li.classList.remove("running", "done", "wait");
+    if (cls) li.classList.add(cls);
+    li.querySelector(".state").textContent = text;
+  }
+  function log(text, kind) {
+    const p = document.createElement("p");
+    if (kind) p.className = kind;
+    p.textContent = "[" + nowTime() + "] " + text;
+    el.log.appendChild(p);
+    el.log.scrollTop = el.log.scrollHeight;
+  }
+  async function api(path, body, timeoutMs) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(function () { ctrl.abort(); }, timeoutMs || 40000);
+    try {
+      const resp = await fetch(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: ctrl.signal
+      });
+      const data = await resp.json().catch(function () { return {}; });
+      return Object.assign({ httpStatus: resp.status }, data);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function initEngine() {
+    try {
+      const r = await fetch("/api/health", { cache: "no-store" });
+      if (!r.ok) throw new Error("no api");
+      const j = await r.json();
+      state.engine.configured = !!j.configured;
+      state.engine.model = j.model || "";
+      if (j.configured) {
+        el.engineTag.textContent = "LLM · " + j.model;
+        el.engineTag.classList.add("llm");
+        el.engineTag.title = "模型服务：" + j.base;
+      } else {
+        el.engineTag.textContent = "离线版 · 规则引擎";
+        el.engineTag.title = "单文件离线版：不联网、不调用模型，全部判断可复现";
+      }
+    } catch (e) {
+      el.engineTag.textContent = "规则引擎（离线）";
+      el.engineTag.title = "未检测到后端服务，使用本地规则引擎";
+    }
+  }
+
+  function switchTab(name) {
+    el.tabs.querySelectorAll(".tab").forEach(function (b) {
+      const on = b.dataset.view === name;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    $("#viewCard").classList.toggle("hidden", name !== "card");
+    $("#viewForm").classList.toggle("hidden", name !== "form");
+    $("#viewArchive").classList.toggle("hidden", name !== "archive");
+    if (name === "archive") renderArchive(el.search.value);
+  }
+
+  /* ---------- 初始化 ---------- */
+  QC.SAMPLES.forEach(function (s) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip";
+    b.textContent = s.label;
+    b.addEventListener("click", function () {
+      el.notice.value = s.text;
+      state.source = null;
+      renderSourceChip();
+      updateInputMeta();
+      el.notice.focus();
+    });
+    el.samples.appendChild(b);
+  });
+
+  function updateInputMeta() {
+    const t = el.notice.value;
+    el.charCount.textContent = t.replace(/\s/g, "").length;
+    el.typeHint.textContent = t.trim() ? QC.TYPE_LABEL[QC.ingest(t).type] : "自动判断";
+  }
+  el.notice.addEventListener("input", function () {
+    updateInputMeta();
+    if (state.source && el.notice.value !== state.source.text) {
+      state.source = null;
+      renderSourceChip();
+    }
+  });
+  el.notice.addEventListener("keydown", function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); runPipeline(); }
+  });
+
+  el.tabs.addEventListener("click", function (e) {
+    const b = e.target.closest(".tab");
+    if (b) switchTab(b.dataset.view);
+  });
+
+  el.run.addEventListener("click", runPipeline);
+
+  /* ---------- 信息源：SEU Wiki ---------- */
+  function shortDate(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    return (d.getMonth() + 1) + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  function renderSourceChip() {
+    if (!state.source) {
+      el.sourceChip.classList.add("hidden");
+      el.sourceChip.innerHTML = "";
+      return;
+    }
+    el.sourceChip.classList.remove("hidden");
+    el.sourceChip.innerHTML = '<span class="from">来源 · SEU Wiki</span>'
+      + "<span>" + esc(state.source.title.length > 26 ? state.source.title.slice(0, 26) + "…" : state.source.title) + "</span>"
+      + '<a href="' + esc(state.source.url) + '" target="_blank" rel="noopener">查看条目 ↗</a>'
+      + (state.source.origin ? '<a href="' + esc(state.source.origin) + '" target="_blank" rel="noopener">院系原文 ↗</a>' : "");
+  }
+
+  function pickSource(item) {
+    el.notice.value = item.text;
+    state.source = {
+      name: "SEU Wiki",
+      text: item.text,
+      title: item.title,
+      url: item.url,
+      origin: item.origin
+    };
+    renderSourceChip();
+    updateInputMeta();
+    el.notice.focus();
+  }
+
+  function renderSourceList(items, fetchedAt) {
+    el.sourceCount.textContent = items.length + " 条";
+    const fetched = new Date(fetchedAt);
+    el.sourceHint.textContent = "SEU Wiki 公开 RSS · "
+      + (isNaN(fetched.getTime()) ? "" : shortDate(fetched.toISOString()) + " ")
+      + "更新 · 点击载入";
+    if (!items.length) {
+      el.sourceList.innerHTML = '<li class="empty">信息源暂时没有新条目，可直接粘贴通知。</li>';
+      return;
+    }
+    el.sourceList.innerHTML = items.map(function (it, i) {
+      return '<li tabindex="0" role="button" data-src="' + i + '">'
+        + '<div class="src-item-title">' + esc(it.title) + "</div>"
+        + '<div class="src-item-meta">'
+        + (it.category ? '<span class="src-cat">' + esc(it.category) + "</span>" : "")
+        + "<span>" + esc((it.author || "").replace(/noreply@seu\.wiki\s*\(?\)?/, "").replace(/[()]/g, "")) + "</span>"
+        + "<span>" + shortDate(it.date) + "</span>"
+        + (it.origin ? '<a href="' + esc(it.origin) + '" target="_blank" rel="noopener">院系原文 ↗</a>' : "")
+        + "</div></li>";
+    }).join("");
+
+    el.sourceList.querySelectorAll("[data-src]").forEach(function (li) {
+      const item = items[Number(li.dataset.src)];
+      li.addEventListener("click", function (e) {
+        if (e.target.closest("a")) return;
+        pickSource(item);
+      });
+      li.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          pickSource(item);
+        }
+      });
+    });
+  }
+
+  async function loadSeu() {
+    el.sourceCount.textContent = "";
+    el.sourceHint.textContent = "离线版不拉取在线公告";
+    el.sourceList.innerHTML = '<li class="empty">离线版可直接粘贴通知，或用上方三条本地示例。'
+      + "在线公告列表需联网版（localhost:8123）。</li>";
+  }
+
+  el.refreshSource.addEventListener("click", function (e) {
+    e.preventDefault();
+    loadSeu();
+  });
+
+  /* ---------- 流水线 ---------- */
+  async function runPipeline() {
+    const text = el.notice.value.trim();
+    if (text.length < 40) {
+      toast("请先粘贴一条通知，或以示例开始");
+      return;
+    }
+
+    state.startedAt = performance.now();
+    el.run.disabled = true;
+    el.run.textContent = "处理中…";
+    el.log.innerHTML = "";
+    el.timer.textContent = "";
+    el.pipeline.querySelectorAll("li").forEach(function (li) {
+      li.classList.remove("running", "done", "wait");
+      li.querySelector(".state").textContent = "待处理";
+    });
+    setAgent("archive", null, "待你确认");
+
+    try {
+      /* 情报 Agent */
+      setAgent("intel", "running", "运行中");
+      log("情报 Agent 启动：定位标题、适用对象、截止时间与材料…");
+      await sleep(560);
+      state.extract = QC.ingest(text);
+      state.card = QC.translate(state.extract);
+      state.form = QC.buildForm(state.extract);
+      setAgent("intel", "done", "完成");
+      log("情报 Agent：" + (state.source
+        ? "读取 SEU Wiki 条目「" + state.source.title + "」，识别为「" + state.extract.typeLabel + "」，"
+        : "识别为「" + state.extract.typeLabel + "」，")
+        + "字段平均置信度 " + state.extract.overall.toFixed(2) + "，"
+        + (state.extract.deadline ? "截止 " + QC.fmtDeadline(state.extract.deadline) : "未找到明确截止") + "。");
+
+      /* 译官 Agent */
+      setAgent("trans", "running", "运行中");
+      log("译官 Agent 启动：" + (state.engine.configured
+        ? "调用 " + state.engine.model + " 改写，输出将做事实校验…"
+        : "未配置模型，使用规则引擎改写…"));
+      let llmCard = null;
+      if (state.engine.configured) {
+        try {
+          const res = await api("/api/translate", {
+            text: text,
+            extract: {
+              typeLabel: state.extract.typeLabel,
+              title: state.extract.title,
+              deadlineText: QC.fmtDeadline(state.extract.deadline),
+              place: state.extract.place,
+              contact: state.extract.contact,
+              audience: state.extract.audience,
+              materials: state.extract.materials
+            }
+          });
+          if (res && res.ok && res.card) llmCard = res.card;
+          else if (res && res.error) log("译官 Agent：" + res.error + "，已回退规则引擎。", "warn");
+        } catch (e) {
+          log("译官 Agent：模型接口不可达（" + (e.name || "error") + "），已回退规则引擎。", "warn");
+        }
+      }
+      if (llmCard) {
+        state.card = Object.assign(state.card, llmCard, { engine: "llm" });
+      } else {
+        state.card.engine = "rule";
+        await sleep(420);
+      }
+      setAgent("trans", "done", "完成");
+      log("译官 Agent：输出结论 1 条、行动 " + state.card.actions.length + " 步，" +
+          (llmCard ? "已通过事实校验（无新增时间与地点）" : "由规则引擎生成，逐句可溯源") + "。",
+          llmCard ? "ok" : null);
+
+      /* 表单 Agent */
+      setAgent("form", "running", "运行中");
+      log("表单 Agent 启动：按字段映射本人档案，标注来源与置信度…");
+      let llmForm = null;
+      if (state.engine.configured) {
+        try {
+          const res = await api("/api/form", {
+            text: text,
+            extract: { typeLabel: state.extract.typeLabel, deadlineText: QC.fmtDeadline(state.extract.deadline), materials: state.extract.materials },
+            profile: QC.PROFILE,
+            type: state.extract.type
+          });
+          if (res && res.ok && res.values) llmForm = res;
+          else if (res && res.error) log("表单 Agent：" + res.error, "warn");
+        } catch (e) {
+          log("表单 Agent：模型接口不可达（" + (e.name || "error") + "），已回退规则引擎。", "warn");
+        }
+      }
+      if (llmForm) {
+        let applied = 0;
+        state.form.rows.forEach(function (r) {
+          const v = llmForm.values[r.label];
+          if (v && typeof v.value === "string" && v.value) {
+            r.value = v.value;
+            r.source = v.source || "infer";
+            r.conf = typeof v.confidence === "number" ? v.confidence : r.conf;
+            applied += 1;
+          }
+        });
+        state.form.checks = llmForm.checks || [];
+        state.form.missing = state.form.rows.filter(function (r) { return !r.value; }).length;
+        state.form.requiredMissing = state.form.rows.filter(function (r) { return r.required && !r.value; }).length;
+        log("表单 Agent：模型回填 " + applied + " 个字段，身份字段按档案锁定，" +
+            state.form.missing + " 项仍需本人补充。", state.form.missing ? "warn" : "ok");
+      } else {
+        await sleep(460);
+        log("表单 Agent：生成 " + state.form.rows.length + " 个字段，其中 " + state.form.missing +
+            " 项无法自动获取，已高亮留空。", state.form.missing ? "warn" : "ok");
+      }
+      setAgent("form", "done", "完成");
+
+      const cost = ((performance.now() - state.startedAt) / 1000).toFixed(1);
+      el.timer.textContent = "本次处理 " + cost + " 秒 · 人工核对约 1 分钟";
+
+      renderCard();
+      renderForm();
+      switchTab("card");
+    } finally {
+      el.run.disabled = false;
+      el.run.textContent = "开始处理";
+    }
+  }
+
+  /* ---------- 译文卡 ---------- */
+  function renderCard() {
+    const ev = state.extract, card = state.card;
+    const ds = QC.deadlineState(ev.deadline);
+
+    let html = "";
+    html += '<div class="card-top">'
+      + '<span class="tag">' + esc(ev.typeLabel) + '</span>'
+      + '<span class="tag ' + ((ds.level === "urgent" || ds.level === "over") ? "amber" : ds.level === "unknown" ? "grey" : "green") + '">' + esc(ds.text) + '</span>'
+      + '<span class="tag ' + (card.engine === "llm" ? "green" : "grey") + '">'
+      + (card.engine === "llm" ? esc(state.engine.model) + " 改写 · 已校验" : "规则引擎改写") + '</span>'
+      + '<span class="tag grey">原文 ' + ev.charCount + " 字 → 译文 " + (card.conclusion.length + card.actions.join("").length) + " 字</span>"
+      + (state.source ? '<a class="tag grey link" href="' + esc(state.source.url) + '" target="_blank" rel="noopener">来源 SEU Wiki ↗</a>' : "")
+      + "</div>";
+    html += '<h3 class="card-title">' + esc(ev.title) + "</h3>";
+    html += '<div class="conclusion">' + esc(card.conclusion) + "</div>";
+
+    html += '<div class="block"><h4>我要做什么</h4><ul class="actions" id="actionList">';
+    card.actions.forEach(function (a) {
+      html += '<li><span class="box">✓</span><span>' + esc(a) + "</span></li>";
+    });
+    html += "</ul></div>";
+
+    html += '<div class="block"><h4>关键信息</h4><div class="kv-grid">'
+      + kv("截止时间", card.deadlineText)
+      + kv("地点", card.place)
+      + kv("找谁", card.contactText, true)
+      + kv("适用对象", card.audience, true)
+      + "</div></div>";
+
+    html += '<div class="block"><h4>材料清单</h4>';
+    if (ev.materials.length) {
+      html += '<div class="materials">' + ev.materials.map(function (m) {
+        return '<span class="mat">' + esc(m) + "</span>";
+      }).join("") + "</div>";
+    } else {
+      html += '<p class="hint">原文未明确列出材料，建议向发文单位确认。</p>';
+    }
+    html += "</div>";
+
+    if (card.caveats && card.caveats.length) {
+      html += '<div class="block"><h4>需要留意</h4><ul class="actions">';
+      card.caveats.forEach(function (c) {
+        html += '<li><span class="box" style="border-color:#e8c98f;color:#b26a00">!</span><span style="text-decoration:none">' + esc(c) + "</span></li>";
+      });
+      html += "</ul></div>";
+    }
+
+    html += '<details class="origin"><summary>原文对照（黄色为被引用的句子）</summary>'
+      + '<div class="origin-body">' + highlight(el.notice.value.trim(), ev) + "</div></details>";
+
+    html += '<div class="card-foot"><span>译官不改动条件与时间；括号内为原文原话。</span>'
+      + '<button class="ghost" id="toForm" type="button">去看草表 →</button></div>';
+
+    el.cardBody.innerHTML = html;
+    el.cardEmpty.classList.add("hidden");
+    el.cardBody.classList.remove("hidden");
+
+    el.cardBody.querySelectorAll("#actionList li").forEach(function (li) {
+      li.addEventListener("click", function () { li.classList.toggle("done"); });
+    });
+    const toForm = el.cardBody.querySelector("#toForm");
+    if (toForm) toForm.addEventListener("click", function () { switchTab("form"); });
+  }
+
+  function kv(k, v, small) {
+    return '<div class="kv"><div class="k">' + esc(k) + '</div><div class="v' + (small ? " small" : "") + '">' + esc(v) + "</div></div>";
+  }
+
+  function highlight(text, ev) {
+    const marks = [];
+    if (ev.deadline) marks.push(ev.deadline.raw);
+    if (ev.contact && ev.contact.name) marks.push(ev.contact.name);
+    if (ev.place) marks.push(ev.place);
+    if (ev.audience) marks.push(ev.audience);
+    ["申报表", "成绩单", "获奖证书", "社会实践证明", "家长知情同意书", "交至", "扫码报名", "销假", "逾期"].forEach(function (k) {
+      if (text.indexOf(k) !== -1) marks.push(k);
+    });
+
+    return text.split("\n").map(function (line) {
+      let html = esc(line);
+      marks.forEach(function (m) {
+        if (!m) return;
+        const e = esc(m);
+        html = html.split(e).join("@@MARK@@" + e + "@@END@@");
+      });
+      html = html.replace(/@@MARK@@/g, "<mark>").replace(/@@END@@/g, "</mark>");
+      return html;
+    }).join("<br>");
+  }
+
+  /* ---------- 草表 ---------- */
+  function renderForm() {
+    const f = state.form;
+    let html = '<div class="form-head"><span class="tag green">草稿</span>'
+      + '<span class="form-name">' + esc(f.name) + "</span></div>"
+      + '<p class="form-note">' + esc(f.note) + " 共 " + f.rows.length + " 个字段。</p>";
+
+    if (f.missing) {
+      html += '<div class="miss-bar">⚠ <span>有 <b>' + f.missing + " 项</b>无法从系统获取，需要你补充。启程不会猜测缺失内容。</span></div>";
+    }
+
+    html += '<table class="sheet"><thead><tr><th>字段</th><th>内容</th><th>来源</th><th>置信度</th></tr></thead><tbody>';
+    f.rows.forEach(function (r, i) {
+      const missing = !r.value;
+      html += '<tr class="' + (missing ? "missing" : "") + '" data-row="' + i + '">';
+      html += '<td class="label">' + esc(r.label) + (r.required ? ' <span style="color:#b26a00">*</span>' : "") + "</td>";
+      html += '<td class="value">';
+      if (missing) {
+        if (r.input === "select") {
+          html += '<select data-input="' + i + '"><option value="">请选择…</option>' +
+            (r.options || []).map(function (o) { return "<option>" + esc(o) + "</option>"; }).join("") + "</select>";
+        } else {
+          html += '<input type="text" data-input="' + i + '" placeholder="' + esc(r.hint || "请补充") + '">';
+        }
+      } else {
+        html += esc(r.value);
+      }
+      html += '<span class="srcbadge src-' + r.source + ' src-inline">' + esc(QC.SOURCE_LABEL[r.source]) + "</span>";
+      html += "</td>";
+      html += '<td class="src"><span class="srcbadge src-' + r.source + '">' + esc(QC.SOURCE_LABEL[r.source]) + "</span></td>";
+      html += '<td class="conf">' + confBar(r.conf) + "</td>";
+      html += "</tr>";
+    });
+    html += "</tbody></table>";
+
+    if (f.checks && f.checks.length) {
+      html += '<div class="checks"><h4>模型给出的核对提示（供参考，不替代你的判断）</h4><ul>'
+        + f.checks.map(function (c) { return "<li>" + esc(c) + "</li>"; }).join("") + "</ul></div>";
+    }
+
+    html += '<div class="confirm-box">'
+      + '<label><input type="checkbox" id="ack"><span>我已逐项核对以上内容，确认来源与数值无误；我知悉签名、盖章与提交仍由本人完成。</span></label>'
+      + '<div class="confirm-actions">'
+      + '<button class="primary" id="confirmBtn" type="button" disabled>确认并生成草表</button>'
+      + '<button class="ghost" id="backCard" type="button">返回译文卡</button>'
+      + '<span class="card-foot" style="border:0;padding:0;margin:0;font-size:11px" id="readyHint">还有 ' + f.missing + " 项待补充</span>"
+      + "</div></div>";
+
+    el.formBody.innerHTML = html;
+    el.formEmpty.classList.add("hidden");
+    el.formBody.classList.remove("hidden");
+
+    const ack = $("#ack");
+    const btn = $("#confirmBtn");
+    const hint = $("#readyHint");
+
+    function refresh() {
+      const filled = f.rows.every(function (r) { return !r.required || r.value; });
+      const missingLeft = f.rows.filter(function (r) { return !r.value; }).length;
+      btn.disabled = !(ack.checked && filled);
+      if (!missingLeft && ack.checked) hint.textContent = "可以生成";
+      else if (!missingLeft) hint.textContent = "勾选左侧确认项后可生成";
+      else hint.textContent = "还有 " + missingLeft + " 项待补充";
+    }
+
+    el.formBody.querySelectorAll("[data-input]").forEach(function (input) {
+      const i = Number(input.dataset.input);
+      const handler = function () {
+        f.rows[i].value = input.value.trim();
+        f.rows[i].source = input.value.trim() ? "self" : "none";
+        f.rows[i].conf = input.value.trim() ? 0.99 : 0;
+        const tr = el.formBody.querySelector('[data-row="' + i + '"]');
+        if (tr) {
+          tr.classList.toggle("missing", !f.rows[i].value);
+          const inline = tr.querySelector(".src-inline");
+          if (inline) {
+            inline.className = "srcbadge src-" + f.rows[i].source + " src-inline";
+            inline.textContent = QC.SOURCE_LABEL[f.rows[i].source];
+          }
+        }
+        refresh();
+      };
+      input.addEventListener("input", handler);
+      input.addEventListener("change", handler);
+    });
+    ack.addEventListener("change", refresh);
+    btn.addEventListener("click", confirmForm);
+    $("#backCard").addEventListener("click", function () { switchTab("card"); });
+    refresh();
+  }
+
+  function confBar(v) {
+    if (!v) return '<span class="confnum">—</span>';
+    const cls = v < 0.75 ? "low" : "";
+    return '<span class="confbar"><i class="' + cls + '" style="width:' + Math.round(v * 100) + '%"></i></span>'
+      + '<span class="confnum">' + v.toFixed(2) + "</span>";
+  }
+
+  /* ---------- 确认与归档 ---------- */
+  function confirmForm() {
+    const f = state.form, ev = state.extract;
+    const record = {
+      id: "QC" + Date.now().toString().slice(-8),
+      type: ev.type,
+      typeLabel: ev.typeLabel,
+      title: ev.title,
+      deadlineText: state.card.deadlineText,
+      deadline: ev.deadline ? ev.deadline.iso : "",
+      formName: f.name,
+      rows: f.rows.map(function (r) {
+        return { label: r.label, value: r.value, source: r.source, conf: r.conf };
+      }),
+      createdAt: new Date().toISOString(),
+      status: "草表已生成，待本人提交",
+      source: state.source ? { name: state.source.name, title: state.source.title, url: state.source.url } : null
+    };
+
+    state.records.unshift(record);
+    saveRecords();
+
+    setAgent("archive", "done", "已归档");
+    log("归档 Agent：草表已归档（" + record.id + "），明年同类通知可直接复用。", "ok");
+
+    openModal(record, true);
+    el.timer.textContent = el.timer.textContent + " · 已归档";
+    switchTab("archive");
+  }
+
+  function openModal(record, isNew) {
+    el.modalTitle.textContent = isNew ? "草表已生成 · " + record.id : record.formName;
+    let html = '<div class="paper">'
+      + "<h4>" + esc(record.formName.replace("（草表）", "")) + "</h4>"
+      + '<div class="paper-sub">草表编号 ' + esc(record.id) + " · 生成于 " + new Date(record.createdAt).toLocaleString("zh-CN") + "</div>"
+      + "<table>";
+    record.rows.forEach(function (r) {
+      html += '<tr><td class="k">' + esc(r.label) + '</td><td class="v">' + esc(r.value || "（待补充）") + "</td></tr>";
+    });
+    html += "</table>";
+    html += '<div class="paper-sign"><span>本人签字：____________</span><span>日期：____ 年 __ 月 __ 日</span></div>';
+    html += '<div class="paper-sign" style="color:#b26a00"><span>本页为草表，提交前请核对并签字。</span><span>' + esc(record.status) + "</span></div>";
+    html += "</div>";
+    el.modalBody.innerHTML = html;
+    el.modal.classList.remove("hidden");
+  }
+
+  function closeModal() { el.modal.classList.add("hidden"); }
+  el.modal.querySelectorAll("[data-close]").forEach(function (n) {
+    n.addEventListener("click", closeModal);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !el.modal.classList.contains("hidden")) closeModal();
+  });
+  el.printBtn.addEventListener("click", function () { window.print(); });
+
+  /* ---------- 归档视图 ---------- */
+  function renderArchive(q) {
+    q = (q || "").trim().toLowerCase();
+    const list = state.records.filter(function (r) {
+      if (!q) return true;
+      return (r.title + r.typeLabel + r.deadlineText + r.formName).toLowerCase().indexOf(q) !== -1;
+    });
+
+    if (!state.records.length) {
+      el.archiveBody.innerHTML = '<div class="rec-empty">还没有归档记录。<br>处理一条通知并确认草表后，它会自动出现在这里。</div>';
+      return;
+    }
+    if (!list.length) {
+      el.archiveBody.innerHTML = '<div class="rec-empty">没有匹配「' + esc(q) + "」的记录。</div>";
+      return;
+    }
+
+    el.archiveBody.innerHTML = list.map(function (r) {
+      const d = new Date(r.createdAt);
+      const time = d.getMonth() + 1 + " 月 " + d.getDate() + " 日 " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+      return '<div class="rec">'
+        + '<div class="rec-top"><span class="tag">' + esc(r.typeLabel) + "</span>"
+        + '<span class="rec-title">' + esc(r.title) + "</span>"
+        + '<span class="rec-actions"><button class="ghost" data-view-rec="' + esc(r.id) + '" type="button">查看草表</button></span></div>'
+        + '<div class="rec-meta"><span>截止 ' + esc(r.deadlineText) + "</span><span>归档 " + time + "</span>"
+        + "<span>" + esc(r.status) + "</span><span>编号 " + esc(r.id) + "</span>"
+        + (r.source ? '<a href="' + esc(r.source.url) + '" target="_blank" rel="noopener" style="color:#2b5c8f">来源 ' + esc(r.source.name) + " ↗</a>" : "")
+        + "</div>"
+        + "</div>";
+    }).join("");
+
+    el.archiveBody.querySelectorAll("[data-view-rec]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        const rec = state.records.find(function (r) { return r.id === b.dataset.viewRec; });
+        if (rec) openModal(rec, false);
+      });
+    });
+  }
+
+  el.search.addEventListener("input", function () { renderArchive(el.search.value); });
+
+  el.exportAll.addEventListener("click", function () {
+    if (!state.records.length) { toast("还没有可导出的记录"); return; }
+    const blob = new Blob([JSON.stringify(state.records, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "启程-我的事务-" + new Date().toISOString().slice(0, 10) + ".json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast("已导出 " + state.records.length + " 条记录");
+  });
+
+  /* ---------- 启动 ---------- */
+  updateInputMeta();
+  initEngine();
+  loadSeu();
+  renderArchive("");
+})();
+
+</script>
+</body>
+</html>
